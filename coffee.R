@@ -7,7 +7,7 @@ library(ggplot2)
 library(ggrepel)
 
 ## LOADING DATA (TASTE PROFILE)
-my_coffee = read.csv("/Users/edie/Box Sync/GitThings/https---github.com-palautatan-yumCoffee.git/coffee_list.csv", header=TRUE)
+my_coffee = read.csv("/Users/edie/Box Sync/GitThings/https---github.com-palautatan-yumCoffee.git/datasets/coffee_list.csv", header=TRUE)
 attach(my_coffee)
 
 ## EDITING RATING
@@ -27,9 +27,9 @@ detach(my_coffee)
 
 ## CREATE NEW DATA FRAME
 updated_coffee = cbind(my_coffee, Rating, coffee_name[1,], coffee_name[2,])
-names(updated_coffee)[8:9] = c("Brand", "Name")
+names(updated_coffee)[9:10] = c("Brand", "Name")
 attach(updated_coffee)
-Roast = factor(Roast, levels=c("Light", "Medium-Light", "Medium", "French", "Medium-Dark", "Dark"))
+Roast = factor(Roast, levels=c("Special", "Light", "Medium-Light", "Medium", "French", "Medium-Dark", "Dark"))
 
 ## PLOT PREFERENCES
 coffee_plot = ggplot()
@@ -45,9 +45,10 @@ coffee_plot_2
 
 ## ANALYZE DATA
 
-# What is this taster's favorite store?
+# What is this taster's favorite store? (Most frequented)
 table_store = rbind(levels(Store), table(Store))
 fave_store = table_store[1,which(table_store[2,]==max(table_store[2,]))]
+cat("This taster frequently goes to:", fave_store)
 fave_store
 
 
