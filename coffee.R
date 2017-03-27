@@ -85,15 +85,8 @@ rate_time + coffee_theme + theme(axis.text.x = element_text(angle = 90, hjust = 
 # HISTOGRAM OF SCORES
 score_hist = ggplot(updated_coffee[which(Roast!="Special"),], aes(x=Rating, fill=Roast, colour=Roast))
 score_hist = score_hist + geom_density(alpha=0.5)
-score_hist = score_hist + ggtitle("Edie's Scores")
+score_hist = score_hist + ggtitle("Edie's Rating Distributions")
 score_hist + coffee_theme
-
-
-# HISTOGRAM OF SCORES (BLACK)
-score_hist_2 = ggplot(updated_coffee[which(Roast!="Special"),], aes(x=Rating, fill=Roast))
-score_hist_2 = score_hist + geom_density(alpha=0.75)
-score_hist_2 = score_hist + ggtitle("Edie's Scores")
-score_hist_2 + coffee_theme
 
 
 # What is this taster's favorite roast?
