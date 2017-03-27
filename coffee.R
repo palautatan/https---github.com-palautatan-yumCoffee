@@ -84,7 +84,7 @@ rate_time + coffee_theme + theme(axis.text.x = element_text(angle = 90, hjust = 
 
 # HISTOGRAM OF SCORES
 score_hist = ggplot(updated_coffee[which(Roast!="Special"),], aes(x=Rating, fill=Roast, colour=Roast))
-score_hist = score_hist + geom_density(alpha=0.5)
+score_hist = score_hist + geom_density(alpha=0.5) + xlim(-1,5)
 score_hist = score_hist + ggtitle("Edie's Rating Distributions")
 score_hist + coffee_theme
 
@@ -115,3 +115,14 @@ ratings_blacks = ratings_blacks[,order(updated_coffee[which(Roast!="Special"),]$
 indices = length(ratings_blacks[1,])-c(0:2)
 top_three_blacks = levels(updated_coffee[which(Roast!="Special"),]$Name)[ratings_blacks[2, indices]]
 top_three_blacks
+
+
+
+# PIE CHART
+roast_table = table(Roast)
+roast_table = data.frame(roast_table)
+coffee_pie = ggplot(roast_table, 
+                    aes(x="", y=Freq, fill=Roast)) + geom_bar(width = 1, stat = "identity")
+coffee_pie = coffee_pie + coord_polar("y", start=0)
+coffee_pie = coffee_pie + ggtitle("Edie's Roasts") + xlab("") + ylab("")
+coffee_pie + coffee_theme

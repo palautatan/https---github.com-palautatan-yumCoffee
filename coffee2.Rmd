@@ -1,0 +1,206 @@
+---
+title: "yumCoffee"
+output:
+  html_document:
+    fig_width: 8
+    fig_height: 5
+geometry: margin=0.75in
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is a project I decided to take on after I finished my first statistical computing class. I was on a coding high then, and I'm 99% confident that the high is still going.
+
+In this project, I collected my own tasting profile for coffee and decided to plot my patterns. It's funny because as I did this plotting project and as I continue to collect more data, I can see some obvious patterns in my data that I actually didn't notice of myself.
+
+```{r, include=FALSE, echo=FALSE}
+# LIBRARIES
+library(stringr)
+library(ggplot2)
+library(ggrepel)
+library(extrafont)
+```
+
+
+# My Coffee Taste Profile
+I recorded all of my preferences for all coffees that I have tried. Right now, I'm still getting through two whole bean bags of Peet's coffee, so I won't be able to add in new data for a while.
+
+I put my ratings in `coffee_list.csv`, which you can access <a href="https://github.com/palautatan/yumCoffee/blob/master/datasets/coffee_list.csv">here</a>. Here's a random sample of what is in `coffee_list.csv`.
+```{r, include=FALSE, echo=FALSE}
+# LOAD IN DATA
+my_coffee = read.csv("/Users/edie/Box Sync/GitThings/https---github.com-palautatan-yumCoffee.git/datasets/coffee_list.csv", header=TRUE)
+attach(my_coffee)
+head(my_coffee)
+
+# CLEAN UP RATING
+Rating = unlist(Personal.Rating)
+Rating = gsub("\\/5", "", Rating)
+Rating = as.numeric(Rating)
+
+# CLEAN UP COFFEE NAMES
+coffee_name = str_split(unlist(Coffee),": ")
+coffee_name = sapply(coffee_name, function(coffee_part) {
+  brand = coffee_part[1]
+  name = coffee_part[2]
+  c(brand, name)
+}
+)
+
+# FORMAT DATE
+form_date = as.Date(Date, format = "%m/%d/%y")
+
+detach(my_coffee)
+
+## CREATE NEW DATA FRAME
+updated_coffee = cbind(my_coffee, Rating, coffee_name[1,], coffee_name[2,], form_date)
+names(updated_coffee)[9:11] = c("Brand", "Name", "TrueDate")
+attach(updated_coffee)
+Roast = factor(Roast, levels=c("Special", "Light", "Medium-Light", "Medium", "French", "Medium-Dark", "Dark"))
+```
+
+
+```{r, echo=FALSE}
+srs = sample(length(updated_coffee[,"Coffee"]), 5)
+updated_coffee[srs, c("Brand", "Name", "Roast", "Store", "Rating")]
+```
+
+I also have some pretty "savage" notes of how I felt about the cofee.
+
+```{r, echo=FALSE, warning=FALSE}
+updated_coffee[srs, c("Notes")]
+```
+
+
+# Visualizing Coffee Preferences
+Here's a plot of the coffees I have had according to roast. In this plot "Special" means that the coffee was not black.
+```{r, echo=FALSE, warning=FALSE}
+coffee_theme = theme(panel.background = element_rect(fill = "white", colour = "white"), 
+                     panel.grid.minor = element_line(colour = "lightblue", 
+                                                     linetype = "dotted"),
+                     panel.grid.major = element_line(colour = "lightgrey",
+                                                     size = 0.2),
+                     plot.title = element_text(size = rel(2), colour = "black",
+                                               family="BebasNeue"))
+```
+
+### Favorite Roast
+Let's look at my favorite roasts! In the following plot, you can see some data points that represent where I got the coffee from, my rating, and the roast of the coffee.
+
+```{r, echo=FALSE, warning=FALSE}
+# ROASTS 2
+roasts_plot = ggplot()
+roasts_plot = roasts_plot + geom_point(aes(x=Roast, y=Rating, colour=factor(Store))) + ylim(0,5)
+roasts_plot = roasts_plot + ggtitle("Edie's Roasts")
+roasts_plot + coffee_theme
+```
+
+This plot shows the same information above, except I labelled the points by store as opposed to coloring them by store.
+
+```{r, echo=FALSE, warning=FALSE}
+# ROASTS
+coffee_plot = ggplot()
+coffee_plot = coffee_plot + geom_point(aes(x=Roast, y=Rating)) + geom_label_repel(aes(x=Roast, y=Rating, label=Brand)) + ylim(0,5)
+coffee_plot = coffee_plot + ggtitle("Edie's Roasts")
+coffee_plot + coffee_theme
+```
+
+I know that many statisticians hate pie charts, but you can at least admit they're pretty.
+
+```{r, echo=FALSE, warning=FALSE}
+# PIE CHART
+roast_table = table(Roast)
+roast_table = data.frame(roast_table)
+coffee_pie = ggplot(roast_table, 
+                    aes(x="", y=Freq, fill=Roast)) + geom_bar(width = 1, stat = "identity")
+coffee_pie = coffee_pie + coord_polar("y", start=0)
+coffee_pie = coffee_pie + ggtitle("Edie's Roasts") + xlab("") + ylab("")
+coffee_pie + coffee_theme
+```
+
+The following calculation tells me what my favorite roasts are according to my taste profile. I don't agree with it though because I know that I really like French Roast. I just haven't had enough French Roasts or had more decent Dark Roasts.
+
+```{r, echo=FALSE}
+# What is this taster's favorite roast?
+df_roast = sapply(levels(Roast), function(this_level) {
+  these_rows = as.numeric(which(Roast==this_level))
+  stat = mean(Rating[these_rows])
+  c(this_level, stat)
+}
+)
+fave_roast = df_roast[1,which(df_roast[2,]==max(df_roast[2,]))]
+cat("This taster's favorite drinks have been from:\n", paste0(fave_roast, sep=". "))
+```
+
+
+
+### Favorite Store
+Here's a plot of where I bought my coffee. The overlapping text in the plot is annoying, yes, but I think it's legible enough. If you cannot read what the first three labels say, here you go: "Costco", "Never Too Latte", and "Ross".
+
+```{r, echo=FALSE, warning=FALSE}
+# STORES
+coffee_plot_2 = ggplot()
+coffee_plot_2 = coffee_plot_2 + geom_point(aes(x=Store, y=Rating, colour=factor(Roast)))
+coffee_plot_2 = coffee_plot_2 + ggtitle("Edie's Stores")
+coffee_plot_2 + coffee_theme
+```
+
+Apparently, my favorite store to buy coffee is Costco. I'm not surprised, and I'm glad my membership is doing me some good.
+
+```{r, echo=FALSE}
+# What is this taster's favorite store? (Most frequented)
+table_store = rbind(levels(Store), table(Store))
+fave_store = table_store[1,which(table_store[2,]==max(table_store[2,]))]
+cat("This taster frequently goes to: ", fave_store, ".", sep="")
+```
+
+
+### Top 3 Coffees
+Let's look at my Top 3 Coffees over time. Here we see a plot of ratings over time just to examine what kind of bias I'm perpetuating as I rate the coffees I try.
+
+```{r, echo=FALSE, warning=FALSE}
+# TIME SERIES OF RATINGS
+rate_time = ggplot(data=updated_coffee[which(!is.na(TrueDate)),], aes(x=TrueDate, y=Rating)) + ylim(0,5)
+rate_time = rate_time + geom_point(aes(size=Rating, colour=factor(Roast)), alpha=0.75) + scale_x_date(date_breaks = "1 month", date_labels =  "%b %Y") 
+rate_time = rate_time + ggtitle("Edie's Ratings Over Time") + xlab("Date")
+rate_time + coffee_theme + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+Here is a density plot of the coffee ratings I gave out. We can obviously see that my ratings come from distinct distributions.
+
+```{r, echo=FALSE, warning=FALSE}
+# HISTOGRAM OF SCORES
+score_hist = ggplot(updated_coffee[which(Roast!="Special"),], aes(x=Rating, fill=Roast, colour=Roast))
+score_hist = score_hist + geom_density(alpha=0.5) + xlim(-1,5)
+score_hist = score_hist + ggtitle("Edie's Rating Distributions")
+score_hist + coffee_theme
+```
+
+My average taste rating is 2.42. I don't think this makes me a coffee prude, nor does it justify my taste profile. I think it means that I really hate Instant Coffee, and several 0's brought down my mean score a lot.
+
+```{r, echo=FALSE}
+# What is this taster's average store?
+avg_score = mean(Rating)
+cat("This taster's average rating is: ", avg_score, ".", sep="")
+```
+
+This says that my favorite coffees ever have been San Francisco Bay French Roast OneCup, Joe's Tall Dark and Handsome, and the Pistachio Mocha Latte from Never Too Latte. I think that these are good estimates for my favorites, although I am not actually that much of a fan of super sugary drinks unless they're boba drinks. So, I also calculated my Top 3 without Special drinks included, I would probably do analyses on "Special" drinks and black coffee in different sections.
+
+```{r, echo=FALSE}
+# How about top 3 drinks?
+# This takes the first 3 sorted regardless of ties
+ratings_coffees = rbind(Rating, Name)
+ratings_coffees = ratings_coffees[,order(Rating)]
+indices = length(ratings_coffees[1,])-c(0:2)
+top_three = levels(Name)[ratings_coffees[2, indices]]
+cat("Including Special drinks, this taster's top 3 favorite drinks are:\n", paste0(top_three, sep=". "))
+
+
+# Black coffee only?
+ratings_blacks = rbind(updated_coffee[which(Roast!="Special"),]$Rating, updated_coffee[which(Roast!="Special"),]$Name)
+ratings_blacks = ratings_blacks[,order(updated_coffee[which(Roast!="Special"),]$Rating)]
+indices = length(ratings_blacks[1,])-c(0:2)
+top_three_blacks = levels(updated_coffee[which(Roast!="Special"),]$Name)[ratings_blacks[2, indices]]
+cat("Excluding special drinks, this taster's top 3 favorite drinks are:\n", paste0(top_three_blacks, sep=". "))
+```
