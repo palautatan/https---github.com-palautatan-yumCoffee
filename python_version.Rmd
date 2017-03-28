@@ -1,0 +1,22 @@
+---
+title: "yumCoffee"
+output:
+  html_document:
+    fig_width: 8
+    fig_height: 5
+geometry: margin=0.75in
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, engine.path="/Users/EDIE/anaconda/bin/ipython2", engine="python")
+```
+
+Holy shit, RMarkdown is boss.
+Here are <a href="https://github.com/yihui/knitr-examples/blob/master/023-engine-python.Rmd">knitr examples</a> that I'll try to implement.
+
+```{python}
+import pandas as pd
+coffee_list = pd.read_csv("/Users/edie/Box Sync/GitThings/https---github.com-palautatan-yumCoffee.git/datasets/coffee_list.csv")
+hi = pd.DataFrame(coffee_list)
+print hi.head()
+```
